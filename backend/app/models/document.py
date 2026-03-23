@@ -1,0 +1,36 @@
+from typing import Optional
+import uuid
+from datetime import datetime
+
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, LargeBinary, String, Text, func
+from sqlalchemy.dialects.postgresql import JSON, UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.database import Base
+
+
+class Document(Base):
+    __tablename__ = "documents"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    title: Mapped[str] = mapped_column(String(500), nullable=False, default="Untitled Document")
+    owner_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    folder_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("folders.id", ondelete="SET NULL"), nullable=True, index=True)
+    content_yjs: Mapped[Optional[bytes]] = mapped_column(LargeBinary, nullable=True)  # Binary Yjs doc state
+    content_html: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Rendered snapshot for search/preview
+    word_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    char_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    page_settings_json: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)  # margins, orientation, size
+    is_template: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    template_category: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    thumbnail_key: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    is_trashed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    trashed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_edited_by: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    last_edited_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    # Relationships
+    owner = relationship("User", back_populates="documents", foreign_keys=[owner_id])
+    folder = relationship("Folder")

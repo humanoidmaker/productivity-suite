@@ -1,0 +1,7 @@
+[run]
+source = app
+omit = app/tasks/celery_app.py, app/main.py
+
+[report]
+show_missing = true
+fail_under = 85

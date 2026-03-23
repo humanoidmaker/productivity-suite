@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: productivity-config
+  namespace: productivity
+data:
+  WORKHUB_REDIS_URL: "redis://redis-svc:6379/0"
+  WORKHUB_CELERY_BROKER_URL: "redis://redis-svc:6379/1"
+  WORKHUB_CELERY_RESULT_BACKEND: "redis://redis-svc:6379/2"
+  WORKHUB_MINIO_ENDPOINT: "minio-svc:9000"
+  WORKHUB_DEBUG: "false"
+  WORKHUB_CORS_ORIGINS: '["https://app.productivity.local","https://admin.productivity.local"]'
